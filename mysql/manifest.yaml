@@ -3,6 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: mysql
   namespace: expense
+  labels:
+    component: mysql
+    project: expense
+    tier: db 
 spec:
   storageClassName: "expense" # Empty string must be explicitly set otherwise default StorageClass will be set
   accessModes:
@@ -10,3 +14,45 @@ spec:
   resources:
     requests:
       storage: 4Gi
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: expense
+spec:
+  selector:
+    matchLabels:
+      # has to match .spec.template.metadata.labels
+      coponent: mysql
+      project: expense
+      tier: db 
+  serviceName: "nginx"
+  replicas: 3 # by default is 1
+  minReadySeconds: 10 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: nginx # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: mysql
+        image: pudviks/mysql:1.0
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "my-storage-class"
+      resources:
+        requests:
+          storage: 1Gi
