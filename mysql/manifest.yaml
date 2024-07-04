@@ -45,16 +45,20 @@ spec:
   selector:
     matchLabels:
       # has to match .spec.template.metadata.labels
-      coponent: mysql
+      component: mysql
       project: expense
       tier: db 
-  serviceName: "nginx"
-  replicas: 3 # by default is 1
+  serviceName: "mysql-headless"
+  replicas: 2 # by default is 1
   minReadySeconds: 10 # by default is 0
   template:
     metadata:
       labels:
-        app: nginx # has to match .spec.selector.matchLabels
+        # has to match .spec.selector.matchLabels
+        component: mysql
+        project: expense
+        tier: db 
+         
     spec:
       terminationGracePeriodSeconds: 10
       containers:
