@@ -1,21 +1,38 @@
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Service
 metadata:
-  name: mysql
+  name: mysql-headless
   namespace: expense
-  labels:
+spec:
+  clusterIP: None # this is called headless service
+  selector:
     component: mysql
     project: expense
     tier: db 
-spec:
-  storageClassName: "expense" # Empty string must be explicitly set otherwise default StorageClass will be set
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 4Gi
+  ports:
+  - protocol: TCP
+    port: 3306 #service-port
+    targetPort: 3306 #target-port
 
----
+----
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: expense
+spec:
+  selector:
+    component: mysql
+    project: expense
+    tier: db 
+  ports:
+  - protocol: TCP
+    port: 3306 #service-port
+    targetPort: 3306 #target-port
+
+
+
 
 apiVersion: apps/v1
 kind: StatefulSet
@@ -49,30 +66,15 @@ spec:
           mountPath: /var/lib/mysql
   volumeClaimTemplates:
   - metadata:
-      name: www
+      name: mysql
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "my-storage-class"
+      storageClassName: "expense"
       resources:
         requests:
           storage: 1Gi
 
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql
-  namespace: expense
-spec:
-  selector:
-    clusterIP: none
-    component: mysql
-    project: expense
-    tier: db 
-  ports:
-  - protocol: TCP
-    port: 3306 #service-port
-    targetPort: 3306 #target-port
+
     
 
     
