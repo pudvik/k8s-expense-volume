@@ -31,6 +31,8 @@ spec:
     port: 3306 #service-port
     targetPort: 3306 #target-port
 
+---
+
 
 
 
